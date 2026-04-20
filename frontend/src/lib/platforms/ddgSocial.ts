@@ -92,3 +92,29 @@ export function searchInstagramDdg(
 ) {
   return searchSiteDdg(s, p, q, "instagram.com", "Instagram", "Instagram");
 }
+
+/** YouTube via DuckDuckGo `site:youtube.com` — works without API key or yt-dlp (e.g. Vercel). */
+export function searchYoutubeDdg(
+  s: SearchSettings,
+  p: ProductInput,
+  q: string[]
+) {
+  return searchSiteDdg(s, p, q, "youtube.com", "YouTube", "Youtube");
+}
+
+/** Shorts-shaped URLs only (`/shorts/`). Pairs with DDG when yt-dlp is unavailable. */
+export async function searchYoutubeShortsDdg(
+  s: SearchSettings,
+  p: ProductInput,
+  q: string[]
+): Promise<CandidateLink[]> {
+  const rows = await searchSiteDdg(
+    s,
+    p,
+    q,
+    "youtube.com",
+    "YouTube Shorts",
+    "YoutubeShorts"
+  );
+  return rows.filter((r) => /\/shorts\//i.test(r.url));
+}

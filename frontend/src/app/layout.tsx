@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { SiteTopBar } from "@/components/SiteTopBar";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -33,6 +34,7 @@ export default function RootLayout({
           color: "#f4f4f5",
         }}
       >
+        <SiteTopBar />
         {children}
       </body>
     </html>

@@ -15,7 +15,6 @@ import {
   NETCAST_LIVE_URL,
 } from "@/lib/siteConfig";
 import { formatThrown, isAbortError } from "@/lib/formatError";
-import Link from "next/link";
 import type { DragEvent } from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
@@ -307,15 +306,7 @@ export default function SearchPage() {
   return (
     <div className="relative z-10 min-h-screen">
       <DiscoveryOceanLoader active={loading} />
-      <div className="mx-auto max-w-7xl px-4 pb-20 pt-12 sm:px-6 lg:px-10">
-        <nav className="mb-8 flex justify-center sm:justify-start">
-          <Link
-            href="/"
-            className="text-sm font-medium text-zinc-500 transition hover:text-cyan-400/90"
-          >
-            ← Home
-          </Link>
-        </nav>
+      <div className="mx-auto max-w-7xl px-4 pb-20 pt-6 sm:px-6 lg:px-10">
         {/* Hero */}
         <header className="mb-12 text-center sm:mb-16">
           <div

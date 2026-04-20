@@ -18,8 +18,11 @@ async function redditFetch(
     headers: { "User-Agent": settings.redditUserAgent },
     next: { revalidate: 0 },
   });
-  if (r.status === 429) return [];
-  if (!r.ok) throw new Error(`Reddit ${r.status}: ${await r.text()}`);
+  if (r.status === 429 || r.status === 403) return [];
+  if (!r.ok) {
+    /* Don’t throw — other platforms still merge; datacenter IPs often get 403 HTML. */
+    return [];
+  }
   const data = (await r.json()) as {
     data?: { children?: Array<{ data?: Record<string, unknown> }> };
   };

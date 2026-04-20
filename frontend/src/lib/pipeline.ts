@@ -25,6 +25,7 @@ import {
   searchFacebookDdg,
   searchInstagramDdg,
   searchTiktokDdg,
+  searchYoutubeShortsDdg,
 } from "./platforms/ddgSocial";
 import { searchReddit } from "./platforms/reddit";
 import { searchYoutubeMerged } from "./platforms/youtubeMerged";
@@ -68,6 +69,12 @@ async function discoverForProduct(
     entries.push({
       name: "youtube",
       run: () => searchYoutubeMerged(settings, product, queries),
+    });
+  }
+  if (wantsPlatform(norm, "YoutubeShorts" as PlatformId)) {
+    entries.push({
+      name: "youtube_shorts_ddg",
+      run: () => searchYoutubeShortsDdg(settings, product, queries),
     });
   }
   if (wantsPlatform(norm, "YoutubeShorts" as PlatformId)) {

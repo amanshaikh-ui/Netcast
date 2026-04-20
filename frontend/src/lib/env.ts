@@ -20,8 +20,14 @@ export function loadSearchSettings(): SearchSettings {
       process.env.VERCEL === "1"
         ? explicitTrue(process.env.TIKTOK_DIRECT_PYTHON)
         : !falsy(process.env.TIKTOK_DIRECT_PYTHON),
-    /** Off unless STRICT_SKU_FILTER=true — prefer evidence scoring (alias/SKU boosts) instead. */
-    strictSkuFilter: explicitTrue(process.env.STRICT_SKU_FILTER),
+    /**
+     * Off unless STRICT_SKU_FILTER=true. On Vercel, forced off — substring SKU matching
+     * removes most DuckDuckGo hits whose snippets omit the SKU.
+     */
+    strictSkuFilter:
+      process.env.VERCEL === "1"
+        ? false
+        : explicitTrue(process.env.STRICT_SKU_FILTER),
     googleCseApiKey: process.env.GOOGLE_CSE_API_KEY?.trim() ?? "",
     googleCseId: process.env.GOOGLE_CSE_ID?.trim() ?? "",
     groqApiKey: process.env.GROQ_API_KEY?.trim() ?? "",
