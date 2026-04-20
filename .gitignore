@@ -11,6 +11,9 @@ build/
 *.egg-info/
 output_links.csv
 
+# Node (root has minimal deps for Vercel detection)
+node_modules/
+
 # Frontend (Next.js)
 frontend/node_modules/
 frontend/.next/

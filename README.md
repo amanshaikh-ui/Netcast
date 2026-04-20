@@ -182,6 +182,24 @@ Facebook has no stable first-party “search every post by SKU” API in this to
 
 
 
+## Deploy on Vercel
+
+
+
+The UI is the **Next.js app** in **`frontend/`**.
+
+
+
+1. Import this repo in [Vercel](https://vercel.com/new) (GitHub integration).
+
+2. **Root Directory:** either **`frontend`** (simplest; Vercel reads `frontend/package.json` with `next`) **or** leave it at **`.`** (repo root). The root **`package.json`** lists `next` so Vercel’s detector succeeds, and **`vercel.json`** runs install/build in **`frontend/`**.
+
+3. **Environment variables:** copy keys from **`frontend/.env.local.example`** into **Project → Settings → Environment Variables** (Production / Preview as needed). On Vercel, set **`TIKTOK_DIRECT_PYTHON=false`** — the serverless runtime does not run the Python/Playwright TikTok subprocess; TikTok still uses DuckDuckGo / CSE when those are enabled.
+
+4. **`/api/search`** uses `maxDuration = 120` seconds. On the **Hobby** plan Vercel caps function duration lower; upgrade to **Pro** if searches time out.
+
+
+
 ## Tests
 
 
