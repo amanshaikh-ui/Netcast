@@ -192,11 +192,13 @@ The UI is the **Next.js app** in **`frontend/`**.
 
 1. Import this repo in [Vercel](https://vercel.com/new) (GitHub integration).
 
-2. **Root Directory:** set to **`frontend`** (required). Vercel runs `npm install` and `npm run build` inside that folder. Do **not** leave Root Directory at the repo root unless you use a custom setup — a root **`vercel.json`** with `npm install --prefix frontend` breaks when Root Directory is already **`frontend`** (it looks for `frontend/frontend/package.json`). Config for deploy lives in **`frontend/vercel.json`**.
+2. **Root Directory:** set to **`frontend`** (required). **`frontend/vercel.json`** pins **`installCommand`** / **`buildCommand`** to plain `npm install` and `npm run build` so the build does not use `npm install --prefix frontend` (that path breaks when Root Directory is already **`frontend`**).
 
-3. **Environment variables:** copy keys from **`frontend/.env.local.example`** into **Project → Settings → Environment Variables** (Production / Preview as needed). On Vercel, set **`TIKTOK_DIRECT_PYTHON=false`** — the serverless runtime does not run the Python/Playwright TikTok subprocess; TikTok still uses DuckDuckGo / CSE when those are enabled.
+3. **Vercel dashboard overrides:** In **Settings → Build & Development**, turn **off** overrides for **Install Command**, **Build Command**, and **Output Directory** (or delete the custom values). Let **`frontend/vercel.json`** and the defaults handle the build.
 
-4. **`/api/search`** uses `maxDuration = 120` seconds. On the **Hobby** plan Vercel caps function duration lower; upgrade to **Pro** if searches time out.
+4. **Environment variables:** copy keys from **`frontend/.env.local.example`** into **Project → Settings → Environment Variables** (Production / Preview as needed). On Vercel, set **`TIKTOK_DIRECT_PYTHON=false`** — the serverless runtime does not run the Python/Playwright TikTok subprocess; TikTok still uses DuckDuckGo / CSE when those are enabled.
+
+5. **`/api/search`** uses `maxDuration = 120` seconds. On the **Hobby** plan Vercel caps function duration lower; upgrade to **Pro** if searches time out.
 
 
 
