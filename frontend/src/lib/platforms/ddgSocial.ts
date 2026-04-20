@@ -1,6 +1,7 @@
 import { search, SafeSearchType } from "duck-duck-scrape";
 
 import type { CandidateLink, ProductInput, SearchSettings } from "../types";
+import { searchHtmlStack } from "./ddgHtmlFallback";
 import {
   buildPlatformSearchQueries,
   urlMatchesSiteHost,
@@ -38,31 +39,51 @@ async function searchSiteDdg(
   for (const q of searchQueries) {
     if (out.length >= cap) break;
     const fullQ = `site:${siteHost} ${q}`.slice(0, 400);
+    type Hit = { url: string; title: string; snippet: string };
+    const combined: Hit[] = [];
+
+    const htmlHits = await searchHtmlStack(fullQ);
+    for (const h of htmlHits) {
+      combined.push({
+        url: h.url,
+        title: h.title,
+        snippet: h.description,
+      });
+    }
+
     try {
       await sleep(DDG_MS);
       const data = await search(fullQ, {
         safeSearch: SafeSearchType.MODERATE,
       });
       for (const r of data.results ?? []) {
-        if (out.length >= cap) break;
-        const url = String(r.url ?? "").trim();
-        if (!url || seen.has(url)) continue;
-        if (!urlMatchesSiteHost(url, siteHost)) continue;
-        seen.add(url);
-        out.push({
-          media: mediaLabel,
-          brand,
-          url,
-          sku,
-          productName,
+        combined.push({
+          url: String(r.url ?? ""),
           title: String(r.title ?? ""),
-          snippet: String(r.description ?? "").replace(/<\/?b>/gi, "").slice(0, 500),
-          score: 0,
-          sourceQuery: fullQ,
+          snippet: String(r.description ?? "").replace(/<\/?b>/gi, ""),
         });
       }
     } catch {
-      /* DDG may rate-limit or block; continue */
+      /* duck-duck-scrape may fail on serverless; HTML stack above is primary */
+    }
+
+    for (const r of combined) {
+      if (out.length >= cap) break;
+      const url = r.url.trim();
+      if (!url || seen.has(url)) continue;
+      if (!urlMatchesSiteHost(url, siteHost)) continue;
+      seen.add(url);
+      out.push({
+        media: mediaLabel,
+        brand,
+        url,
+        sku,
+        productName,
+        title: r.title,
+        snippet: r.snippet.slice(0, 500),
+        score: 0,
+        sourceQuery: fullQ,
+      });
     }
   }
 

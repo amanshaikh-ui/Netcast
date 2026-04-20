@@ -4,6 +4,7 @@ import { runPipeline } from "@/lib/pipeline";
 import type { PipelineMeta, PipelineResult, ProductInput } from "@/lib/types";
 import { NextResponse } from "next/server";
 
+export const runtime = "nodejs";
 export const maxDuration = 120;
 
 /** Batch runs return `meta: { perProduct }` — lift first product meta + batch count for the UI. */
