@@ -1,0 +1,122 @@
+NetCast / Link Search — Technical Overview
+1. Purpose
+Product-link discovery for public social URLs: given Brand, SKU, and optional product name, the system searches YouTube, Reddit, TikTok, Facebook, and Instagram (subset configurable), enriches evidence, scores, dedupes, and explains what was found vs missing.
+
+Design goal: maximize realistic public coverage — not a guarantee of every platform for every SKU.
+
+2. Repository layout
+Area	Role
+src/linksearch/
+Python backend: pipeline, CLI, platform adapters, scoring, classification
+frontend/
+Next.js 15 UI: single-page app + POST /api/search that runs a TypeScript pipeline (parallel implementation, not identical to Python)
+tests/
+pytest for aliases, classification, adapter helpers, etc.
+scripts/
+e.g. TikTok Playwright debug (tiktok_playwright_debug.py)
+Root package.json
+Convenience: npm run dev / build / lint → frontend/
+pyproject.toml
+Package linksearch, optional extras [direct], [dev], [ocr]
+Important: Two pipelines exist — Python (linksearch.pipeline) used by linksearch CLI; TypeScript (frontend/src/lib/pipeline.ts) used by the NetCast UI API. Feature parity is directional, not guaranteed.
+
+3. Python pipeline (core behavior)
+Entry points
+
+linksearch CLI (src/linksearch/cli.py) — CSV in, CSV out
+run_pipeline() / discover_for_product() in src/linksearch/pipeline.py
+High-level flow (per product)
+
+Aliases — aliases.build_product_aliases() — pass-1/2 queries, hashtags, family phrases.
+Queries — groq_helper.build_search_queries() (Groq optional).
+Coverage & budgets — orchestration.build_crawl_plan() + coverage_prediction — archetype, per-platform likelihood, crawl budget (shallow/medium/deep).
+Parallel discovery — asyncio.gather on tasks keyed by source (youtube, tiktok_native, instagram_native, facebook_ddg, …).
+Order of sources (conceptually): native/direct first where enabled, then DuckDuckGo site: search, then Brave (if enabled), then Google CSE (if enabled).
+Seed expansion — seed_expand_v3.seed_expansion_v3() (budgeted) or legacy TikTok/IG expanders from seed_expand.py.
+Enrichment — evidence_fetch.enrich_candidates_parallel() — HTTP fetch + OG/title + crawl4ai_merge.merge_from_html() (JSON-LD / hashtag hints).
+Scoring — scoring.apply_heuristic_and_sort(); optional Groq rerank.
+Dedupe — canonical_url.canonicalize_social_url().
+Explain & classify — explain_results.build_explanation(), classification.build_classification_block(), TikTok zero-warning for social-heavy archetypes.
+Metadata returned includes: objective, archetype, coverage, budgets, caps, found_platforms, missing_platforms, classification, discovery_events, adapter_observations, runtime_region.
+
+4. Configuration (src/linksearch/config.py)
+Pydantic Settings from environment / .env. Notable flags:
+
+Theme	Settings / env
+YouTube
+YOUTUBE_API_KEY, YOUTUBE_USE_YTDLP
+Google CSE
+GOOGLE_CSE_ENABLED (default false), GOOGLE_CSE_API_KEY, GOOGLE_CSE_ID
+DDG social
+DDG_SOCIAL_ENABLED
+Brave
+BRAVE_SEARCH_ENABLED, BRAVE_SEARCH_API_KEY
+TikTok direct
+TIKTOK_DIRECT_ENABLED, TIKTOK_MS_TOKEN, TIKTOK_BROWSER, TIKTOK_PLAYWRIGHT_V3, scroll/heading options
+Instagram
+INSTAGRAM_DIRECT_ENABLED, INSTAGRAM_SESSION_FILE, INSTAGRAM_PROFILE_FIRST_V2, seed budget flags
+Facebook Playwright
+FACEBOOK_PLAYWRIGHT_ENABLED, FACEBOOK_PAGE_URL (exact Page URL recommended)
+Pipeline behavior
+MAX_RESULTS_PER_PLATFORM, STRICT_SKU_FILTER, seed expansion toggles
+5. Platform adapters (Python)
+YouTube
+platforms/youtube_merged.py — combines YouTube Data API (if key) with yt-dlp Innertube search (youtube_ytdlp.py).
+
+Reddit
+platforms/reddit.py — HTTP search against Reddit (no official API key required; uses user agent).
+
+TikTok
+Native retries — adapter_retry.run_tiktok_native_with_retries() — query packs (primary → alternate → family → hashtag-heavy).
+Either platforms/tiktok_direct.py (TikTokApi + Playwright session) with query_override per pack, or
+platforms/tiktok_playwright_v3.py (sync Playwright: search page, scroll, XHR-style response counting, optional profile expand) when TIKTOK_PLAYWRIGHT_V3 is on.
+DDG — platforms/ddg_social.search_tiktok_ddg.
+Brave / CSE — brave_social.py, platforms/google_cse.py.
+Seed expand — seed_expand.expand_tiktok_around_handles() (TikTokApi).
+Instagram
+adapter_retry.run_instagram_native_with_retries() → platforms/instagram_native_v2.py: profile username guesses + /p/ and /reel/ URLs; first retry does profile, later packs emphasize hashtag hints; falls back to hashtag crawl like instagram_direct.py.
+DDG / Brave / CSE as above.
+Facebook
+DDG / Brave / CSE — search_facebook_ddg, etc.
+Playwright (async) — platforms/facebook_playwright.py: opens configured FACEBOOK_PAGE_URL (or derived facebook.com/<slug>), navigates to /videos, scrolls, collects links matching video/post patterns. Gated by FACEBOOK_PLAYWRIGHT_ENABLED. Hooked in pipeline.py as task facebook_playwright.
+6. Cross-cutting modules
+Module	Role
+observability.py
+AdapterObservation — structured fields (query, adapter name, region, counts, rejections, retries).
+adapter_retry.py
+TikTok/Instagram pack builders + orchestration.
+runtime_geo.py
+get_runtime_region(), India-oriented warning for TikTok/IG friction.
+crawl4ai_merge.py
+Extra merge from HTML (JSON-LD, hashtags) into evidence before final scoring.
+classification.py
+missing_platform_reasons, build_classification_block, slug mapping for API consumers.
+canonical_url.py
+Normalize social URLs for dedupe.
+csv_io.py
+Read/write CSV for CLI.
+7. Debugging & scripts
+scripts/tiktok_playwright_debug.py — fixed query (e.g. “ninja creami”), dumps PAGE_LENGTH, body sample, link counts, BLOCK_SIGNALS (including India compliance text when present), network hit samples.
+TIKTOK_PLAYWRIGHT_DEBUG — extra dumps inside tiktok_playwright_v3.py.
+facebook_playwright.py — runnable as python -m linksearch.platforms.facebook_playwright for a hardcoded Page smoke test.
+8. Frontend (NetCast)
+Next.js 15, app router, frontend/src/app/page.tsx — “NetCast” UI: single product or CSV batch, platform checkboxes, results table, warnings, explanation + classification JSON.
+POST /api/search — parses JSON/CSV, calls runPipeline from frontend/src/lib/pipeline.ts (TypeScript discovery, not the Python module).
+Root npm run dev delegates to frontend.
+9. Operational realities (documented behavior)
+TikTok may be unreachable or compliance-blocked in some regions (e.g. India) — debug output showed redirect to ban/compliance copy; zero links ≠ adapter bug necessarily.
+Facebook/Instagram discovery depends on index quality (DDG/CSE), rate limits, login walls, and for FB Playwright, exact Page URL + automation tolerance.
+CSE requires keys and is subject to quota (e.g. 429).
+Secrets should not be committed; rotate keys if leaked in logs.
+10. How to run (summary)
+What	Command
+CLI
+linksearch run --input in.csv --output out.csv
+Tests
+pytest (project tests/)
+UI
+From repo root: npm run dev → open the Local URL Next prints (port may not be 3000 if busy)
+FB Playwright module test
+python -m linksearch.platforms.facebook_playwright (with Playwright + Chromium installed)
+This matches the README.md theme (DDG-first, CSE optional, direct extras) and the code under src/linksearch/** and frontend/src/**. If you want this as a checked-in ARCHITECTURE.md, switch to Agent mode and ask for the file to be created.
+

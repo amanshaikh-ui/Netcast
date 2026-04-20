@@ -1,0 +1,121 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg-deep: #030712;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  min-height: 100vh;
+  color: #f4f4f5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
+  background-color: var(--bg-deep);
+  background-image:
+    radial-gradient(ellipse 120% 80% at 50% -30%, rgba(34, 211, 238, 0.18), transparent 55%),
+    radial-gradient(ellipse 80% 50% at 100% 50%, rgba(167, 139, 250, 0.12), transparent 45%),
+    radial-gradient(ellipse 60% 40% at 0% 80%, rgba(244, 63, 94, 0.08), transparent 40%),
+    linear-gradient(180deg, #030712 0%, #0a0f1a 50%, #030712 100%);
+  background-attachment: fixed;
+}
+
+.mesh-grid::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+  background-size: 64px 64px;
+  mask-image: radial-gradient(ellipse 70% 60% at 50% 30%, black 20%, transparent 100%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+@layer utilities {
+  .glass {
+    @apply border border-white/[0.08] bg-white/[0.03] shadow-2xl backdrop-blur-xl;
+  }
+  .glass-strong {
+    @apply border border-white/[0.12] bg-zinc-900/50 shadow-2xl backdrop-blur-2xl;
+  }
+  .text-gradient {
+    @apply bg-gradient-to-r from-cyan-300 via-violet-300 to-fuchsia-400 bg-clip-text text-transparent;
+  }
+  .btn-shine {
+    background: linear-gradient(
+      135deg,
+      rgba(34, 211, 238, 0.95) 0%,
+      rgba(139, 92, 246, 0.95) 50%,
+      rgba(244, 114, 182, 0.95) 100%
+    );
+    box-shadow:
+      0 0 48px -12px rgba(34, 211, 238, 0.45),
+      0 8px 32px -8px rgba(139, 92, 246, 0.35);
+  }
+  .btn-shine:hover:not(:disabled) {
+    filter: brightness(1.08);
+    box-shadow:
+      0 0 56px -8px rgba(34, 211, 238, 0.55),
+      0 12px 40px -8px rgba(139, 92, 246, 0.4);
+  }
+  .input-glow:focus {
+    @apply border-cyan-500/50 ring-2 ring-cyan-500/20;
+  }
+}
+
+@keyframes pulse-glow {
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+.animate-pulse-slow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+/* Discovery loader */
+@keyframes spin-cw {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+@keyframes spin-ccw {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(-360deg); }
+}
+
+@keyframes radar-ping {
+  0%   { transform: scale(1); opacity: 0.6; }
+  100% { transform: scale(1.55); opacity: 0; }
+}
+
+@keyframes dot-pulse {
+  0%, 100% { opacity: 0.7; transform: scale(1); }
+  50%       { opacity: 1;   transform: scale(1.2); }
+}
+
+@keyframes scan-bar {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(250%); }
+}
+
+@keyframes blink-text {
+  0%, 60%, 100% { opacity: 0.55; }
+  30%            { opacity: 1; }
+}
+
+@keyframes scan-row {
+  from { opacity: 0; transform: translateX(-8px); }
+  to   { opacity: 1; transform: translateX(0); }
+}

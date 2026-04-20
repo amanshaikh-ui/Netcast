@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Programmable Search (embed demo)</title>
+    <!-- CSE loader: keep in <head>, async -->
+    <script async src="https://cse.google.com/cse.js?cx=e09162f9a827f4e7f"></script>
+  </head>
+  <body>
+    <main style="max-width: 640px; margin: 2rem auto; padding: 0 1rem">
+      <h1 style="font-family: system-ui, sans-serif; font-size: 1.25rem">
+        Google Custom Search embed
+      </h1>
+      <p style="font-family: system-ui, sans-serif; color: #444; font-size: 0.9rem">
+        Optional browser widget. The <code>linksearch</code> CLI uses the same
+        <code>cx</code> via <code>GOOGLE_CSE_ID</code> in <code>.env</code> — no HTML required for the
+        Python tool.
+      </p>
+      <!-- Search box renders here -->
+      <div class="gcse-search"></div>
+    </main>
+  </body>
+</html>

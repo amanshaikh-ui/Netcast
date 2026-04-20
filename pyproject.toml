@@ -1,0 +1,43 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "linksearch"
+version = "1.0.0"
+description = "Automated social media link discovery for product SKUs across YouTube, Reddit, TikTok, Facebook, and Instagram."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+dependencies = [
+    "httpx>=0.27.0",
+    "pydantic>=2.6.0",
+    "pydantic-settings>=2.2.0",
+    "python-dotenv>=1.0.0",
+    "typer>=0.12.0",
+    "groq>=0.11.0",
+    "yt-dlp>=2024.12.0",
+    "duckduckgo-search>=6.0.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0.0", "ruff>=0.4.0"]
+# Playwright + TikTok/IG: pip install -e ".[direct]" then playwright install chromium
+direct = ["TikTokApi>=7.0.0", "instaloader>=4.10", "playwright>=1.40.0"]
+# Optional thumbnail OCR: pip install -e ".[ocr]" (+ system Tesseract binary)
+ocr = ["Pillow>=10.0.0", "pytesseract>=0.3.10"]
+
+[project.scripts]
+linksearch = "linksearch.cli:app"
+linksearch-tiktok-stdio = "linksearch.tiktok_direct_stdio:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
