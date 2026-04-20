@@ -192,7 +192,7 @@ The UI is the **Next.js app** in **`frontend/`**.
 
 1. Import this repo in [Vercel](https://vercel.com/new) (GitHub integration).
 
-2. **Root Directory:** either **`frontend`** (simplest; Vercel reads `frontend/package.json` with `next`) **or** leave it at **`.`** (repo root). The root **`package.json`** lists `next` so Vercel’s detector succeeds, and **`vercel.json`** runs install/build in **`frontend/`**.
+2. **Root Directory:** set to **`frontend`** (required). Vercel runs `npm install` and `npm run build` inside that folder. Do **not** leave Root Directory at the repo root unless you use a custom setup — a root **`vercel.json`** with `npm install --prefix frontend` breaks when Root Directory is already **`frontend`** (it looks for `frontend/frontend/package.json`). Config for deploy lives in **`frontend/vercel.json`**.
 
 3. **Environment variables:** copy keys from **`frontend/.env.local.example`** into **Project → Settings → Environment Variables** (Production / Preview as needed). On Vercel, set **`TIKTOK_DIRECT_PYTHON=false`** — the serverless runtime does not run the Python/Playwright TikTok subprocess; TikTok still uses DuckDuckGo / CSE when those are enabled.
 

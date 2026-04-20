@@ -31,6 +31,6 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 
 ## Deploy on Vercel
 
-Import the GitHub repo and set **Root Directory** to **`frontend`**, or deploy from the repo root using the root **`vercel.json`**. Copy env vars from **`.env.local.example`** into Vercel (see the repository **README** for `TIKTOK_DIRECT_PYTHON` on serverless).
+Import the GitHub repo and set **Root Directory** to **`frontend`** (required). Copy env vars from **`.env.local.example`** into Vercel (see the repository **README** for `TIKTOK_DIRECT_PYTHON` on serverless). Do not use a root **`vercel.json`** that runs `npm install --prefix frontend` when Root Directory is already **`frontend`**.
 
 The [Vercel Platform](https://vercel.com/new) works with Next.js out of the box. See [Next.js deployment docs](https://nextjs.org/docs/app/building-your-application/deploying) for details.
