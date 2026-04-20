@@ -7,6 +7,13 @@ import {
   type PlatformId,
 } from "@/lib/platformFilter";
 import type { ProductClassification } from "@/lib/types";
+import {
+  EXAMPLE_BRAND,
+  EXAMPLE_PRODUCT_NAME,
+  EXAMPLE_SKU,
+  NETCAST_GITHUB_URL,
+  NETCAST_LIVE_URL,
+} from "@/lib/siteConfig";
 import { formatThrown, isAbortError } from "@/lib/formatError";
 import Link from "next/link";
 import type { DragEvent } from "react";
@@ -53,11 +60,9 @@ function mediaBadgeClass(media: string): string {
 }
 
 export default function SearchPage() {
-  const [brand, setBrand] = useState("Ryobi");
-  const [sku, setSku] = useState("RYI6522");
-  const [productName, setProductName] = useState(
-    "Ryobi 40V 550 CFM Blower, Bare Tool"
-  );
+  const [brand, setBrand] = useState(EXAMPLE_BRAND);
+  const [sku, setSku] = useState(EXAMPLE_SKU);
+  const [productName, setProductName] = useState(EXAMPLE_PRODUCT_NAME);
   const [csvText, setCsvText] = useState("");
   const [csvFileName, setCsvFileName] = useState<string | null>(null);
   const [dragActive, setDragActive] = useState(false);
@@ -67,7 +72,6 @@ export default function SearchPage() {
   const [mode, setMode] = useState<"single" | "csv">("single");
   const [loading, setLoading] = useState(false);
   const [rows, setRows] = useState<Row[]>([]);
-  const [warnings, setWarnings] = useState<string[]>([]);
   const [classification, setClassification] = useState<ProductClassification | null>(
     null
   );
@@ -95,6 +99,18 @@ export default function SearchPage() {
       mountedRef.current = false;
       searchAbortRef.current?.abort();
     };
+  }, []);
+
+  /** Optional ?brand=&sku=&productName= from home “example” link. */
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    const b = params.get("brand")?.trim();
+    const s = params.get("sku")?.trim();
+    const p = params.get("productName")?.trim();
+    if (b) setBrand(b);
+    if (s) setSku(s);
+    if (p) setProductName(p);
   }, []);
 
   const ingestFile = useCallback((file: File) => {
@@ -141,7 +157,6 @@ export default function SearchPage() {
 
     setLoading(true);
     setError(null);
-    setWarnings([]);
     setClassification(null);
     setShowCoverageChart(false);
     setBatchProductCount(null);
@@ -230,13 +245,7 @@ export default function SearchPage() {
         };
       });
 
-      const wIn = Array.isArray(payload.warnings) ? payload.warnings : [];
-      const normalizedWarnings = wIn.filter(
-        (w): w is string => typeof w === "string"
-      );
-
       setRows(normalizedRows);
-      setWarnings(normalizedWarnings);
       const cls = payload.meta?.classification ?? null;
       setClassification(cls);
       setBatchProductCount(
@@ -584,16 +593,6 @@ export default function SearchPage() {
                 {String(error)}
               </div>
             )}
-            {warnings.length > 0 && (
-              <div className="rounded-2xl border border-amber-500/25 bg-amber-950/30 px-5 py-4 text-sm text-amber-100/95 ring-1 ring-amber-500/15">
-                <p className="font-semibold text-amber-200">Notes</p>
-                <ul className="mt-2 list-inside list-disc space-y-1 text-xs text-amber-100/85">
-                  {warnings.map((w, i) => (
-                    <li key={i}>{w}</li>
-                  ))}
-                </ul>
-              </div>
-            )}
             {showCoverageChart && (
               <div className="rounded-2xl border border-cyan-500/20 bg-cyan-950/20 px-5 py-4 ring-1 ring-cyan-500/15">
                 <p className="mb-3 font-semibold text-cyan-200">Coverage overview</p>
@@ -702,8 +701,26 @@ export default function SearchPage() {
         </div>
 
         <footer className="mt-16 text-center text-xs text-zinc-600">
-          Keys live server-side · Built for product &amp; social research
-          workflows
+          <p>Keys live server-side · Built for product &amp; social research</p>
+          <p className="mt-3 flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
+            <a
+              href={NETCAST_LIVE_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-cyan-500/90 underline decoration-cyan-500/40 underline-offset-2 hover:text-cyan-400"
+            >
+              Live app (Vercel)
+            </a>
+            <span className="text-zinc-700">·</span>
+            <a
+              href={NETCAST_GITHUB_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-zinc-400 underline decoration-zinc-600 underline-offset-2 hover:text-zinc-300"
+            >
+              GitHub
+            </a>
+          </p>
         </footer>
       </div>
     </div>

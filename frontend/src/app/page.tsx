@@ -1,5 +1,11 @@
 import Link from "next/link";
-import { getExplainerEmbedSrc } from "@/lib/siteConfig";
+import {
+  EXAMPLE_BRAND,
+  EXAMPLE_PRODUCT_NAME,
+  EXAMPLE_SKU,
+  NETCAST_GITHUB_URL,
+  NETCAST_LIVE_URL,
+} from "@/lib/siteConfig";
 
 const FEATURES = [
   {
@@ -24,9 +30,16 @@ const FEATURES = [
   },
 ];
 
-export default function HomePage() {
-  const explainerSrc = getExplainerEmbedSrc();
+function exampleSearchHref(): string {
+  const q = new URLSearchParams({
+    brand: EXAMPLE_BRAND,
+    sku: EXAMPLE_SKU,
+    productName: EXAMPLE_PRODUCT_NAME,
+  });
+  return `/search?${q.toString()}`;
+}
 
+export default function HomePage() {
   return (
     <div className="relative z-10 min-h-screen overflow-hidden">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(34,211,238,0.18),transparent)]" />
@@ -52,7 +65,7 @@ export default function HomePage() {
               href="/search"
               className="btn-shine inline-flex rounded-2xl px-8 py-4 text-base font-bold text-white shadow-lg shadow-cyan-500/20 ring-1 ring-cyan-500/30"
             >
-              Let&apos;s start
+              Link search
             </Link>
             <a
               href="#features"
@@ -87,48 +100,40 @@ export default function HomePage() {
           </div>
         </section>
 
-        <section className="mt-24 border-t border-white/[0.06] pt-20">
-          <h2 className="text-center text-2xl font-bold text-white sm:text-3xl">
-            See it in action
+        <section className="mt-20 border-t border-white/[0.06] pt-16">
+          <h2 className="text-center text-xl font-bold text-white sm:text-2xl">
+            Example product
           </h2>
-          <p className="mx-auto mt-3 max-w-xl text-center text-sm text-zinc-500">
-            Walkthrough of the project — add your Google Drive video URL via{" "}
-            <code className="rounded bg-zinc-800/80 px-1.5 py-0.5 font-mono text-[11px] text-cyan-200/90">
-              NEXT_PUBLIC_EXPLAINER_VIDEO_URL
-            </code>{" "}
-            in your environment.
+          <p className="mx-auto mt-2 max-w-lg text-center text-sm text-zinc-500">
+            Try this sample — opens the search console with fields filled in.
           </p>
-          <div className="mx-auto mt-10 max-w-4xl overflow-hidden rounded-3xl border border-white/10 bg-black/40 ring-1 ring-white/[0.06]">
-            {explainerSrc ? (
-              <div className="aspect-video w-full">
-                <iframe
-                  title="NetCast explainer"
-                  src={explainerSrc}
-                  className="h-full w-full"
-                  allow="autoplay; fullscreen; picture-in-picture"
-                  allowFullScreen
-                />
+          <div className="mx-auto mt-8 max-w-xl rounded-3xl border border-white/[0.08] bg-white/[0.03] p-6 text-left ring-1 ring-white/[0.05]">
+            <dl className="space-y-3 text-sm">
+              <div>
+                <dt className="text-[11px] font-semibold uppercase tracking-wider text-zinc-500">
+                  Brand
+                </dt>
+                <dd className="mt-1 font-medium text-zinc-100">{EXAMPLE_BRAND}</dd>
               </div>
-            ) : (
-              <div className="flex aspect-video flex-col items-center justify-center gap-3 px-6 text-center">
-                <div className="rounded-2xl border border-dashed border-zinc-600 bg-zinc-900/50 px-6 py-12">
-                  <p className="text-sm font-medium text-zinc-400">
-                    Explainer video placeholder
-                  </p>
-                  <p className="mt-2 max-w-md text-xs text-zinc-600">
-                    Set{" "}
-                    <span className="font-mono text-zinc-500">
-                      NEXT_PUBLIC_EXPLAINER_VIDEO_URL
-                    </span>{" "}
-                    to your Google Drive file link (e.g.{" "}
-                    <span className="break-all text-zinc-500">
-                      https://drive.google.com/file/d/…/view
-                    </span>
-                    ). The app embeds it automatically.
-                  </p>
-                </div>
+              <div>
+                <dt className="text-[11px] font-semibold uppercase tracking-wider text-zinc-500">
+                  SKU
+                </dt>
+                <dd className="mt-1 font-mono text-zinc-200">{EXAMPLE_SKU}</dd>
               </div>
-            )}
+              <div>
+                <dt className="text-[11px] font-semibold uppercase tracking-wider text-zinc-500">
+                  Product name
+                </dt>
+                <dd className="mt-1 text-zinc-300">{EXAMPLE_PRODUCT_NAME}</dd>
+              </div>
+            </dl>
+            <Link
+              href={exampleSearchHref()}
+              className="mt-6 inline-flex w-full items-center justify-center rounded-2xl border border-cyan-500/35 bg-cyan-500/10 py-3 text-sm font-semibold text-cyan-100 transition hover:bg-cyan-500/20"
+            >
+              Open link search with this example
+            </Link>
           </div>
         </section>
 
@@ -145,7 +150,26 @@ export default function HomePage() {
         </section>
 
         <footer className="mt-20 border-t border-white/[0.06] pt-10 text-center text-xs text-zinc-600">
-          Keys and APIs stay server-side · NetCast
+          <p>Keys and APIs stay server-side · NetCast</p>
+          <p className="mt-4 flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
+            <a
+              href={NETCAST_LIVE_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-cyan-500/90 underline decoration-cyan-500/40 underline-offset-2 hover:text-cyan-400"
+            >
+              Live app (Vercel)
+            </a>
+            <span className="text-zinc-700">·</span>
+            <a
+              href={NETCAST_GITHUB_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-zinc-400 underline decoration-zinc-600 underline-offset-2 hover:text-zinc-300"
+            >
+              GitHub
+            </a>
+          </p>
         </footer>
       </div>
     </div>
